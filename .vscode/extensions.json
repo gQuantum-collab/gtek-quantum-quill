@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "ms-azuretools.vscode-docker",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "github.vscode-github-actions",
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    "editorconfig.editorconfig",
+    "prisma.prisma",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
+}

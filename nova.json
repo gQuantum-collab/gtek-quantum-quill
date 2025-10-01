@@ -1,0 +1,11 @@
+{
+  "name": "admin-chat-audit",
+  "ports": { "web": 3000, "api": 4000, "db": 5432 },
+  "env": {
+    "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/adminchat",
+    "WEB_ORIGIN": "http://localhost:3000",
+    "JWT_SECRET": "please-change-me-super-secret"
+  },
+  "features": { "devStudio": true, "pdfExport": false, "workflows": true },
+  "cloud": { "provider": "gcp", "project": "your-gcp-project", "region": "us-central1", "sql_instance": "adminchat-sql" }
+}

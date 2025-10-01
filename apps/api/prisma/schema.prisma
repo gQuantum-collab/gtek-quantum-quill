@@ -1,0 +1,582 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users     User[]
+  projects  Project[]
+  tasks     Task[]
+  ledgerEvents LedgerEvent[]
+  clients   Client[]
+  serviceOfferings ServiceOffering[]
+  subscriptions Subscription[]
+  invoices  Invoice[]
+  payments  Payment[]
+  leads     Lead[]
+  communicationLogs CommunicationLog[]
+  shipments Shipment[]
+  routes    Route[]
+  vehicles  Vehicle[]
+  assets    Asset[]
+  orders    Order[]
+  jobs      Job[]
+  integrationCredentials IntegrationCredential[]
+  quantumJobs QuantumJob[]
+
+  @@map("organizations")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  AUDITOR
+  MANAGER
+  CONTRIBUTOR
+  READONLY
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  password       String?
+  role           Role     @default(CONTRIBUTOR)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  assignedTasks    Task[]           @relation("TaskAssignee")
+  createdTasks     Task[]           @relation("TaskCreator")
+  ownedProjects    Project[]        @relation("ProjectOwner")
+  ledgerEvents     LedgerEvent[]
+  communicationLogs CommunicationLog[]
+  quantumJobs      QuantumJob[]
+  chatMessages     ChatMessage[]
+
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  CANCELLED
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      Status   @default(TODO)
+  orgId       String
+  ownerId     String
+  dueAt       DateTime?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  owner        User        @relation("ProjectOwner", fields: [ownerId], references: [id])
+  tasks        Task[]
+
+  @@map("projects")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      Status    @default(TODO)
+  priority    Priority  @default(MEDIUM)
+  projectId   String
+  orgId       String
+  assigneeId  String?
+  creatorId   String
+  dueAt       DateTime?
+  tags        String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee     User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creator      User         @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  @@map("tasks")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  content     Json
+  version     String   @default("1.0.0")
+  isPublic    Boolean  @default(false)
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  definition  Json
+  version     String   @default("1.0.0")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("workflows")
+}
+
+model LedgerEvent {
+  id        String   @id @default(cuid())
+  entity    String
+  entityId  String
+  action    String
+  data      Json
+  userId    String
+  orgId     String
+  hash      String
+  prevHash  String
+  timestamp DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@map("ledger_events")
+}
+
+model ChatRoom {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPrivate   Boolean  @default(false)
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  messages    ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  content   String
+  roomId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("chat_messages")
+}
+
+// ============================================================================
+// SOLOPRENEUR ENTITIES
+// ============================================================================
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  profile     Json?
+  contacts    Json?
+  mrr         Decimal? // Monthly Recurring Revenue
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+  invoices    Invoice[]
+  leads       Lead[]
+  communicationLogs CommunicationLog[]
+  orders      Order[]
+  shipments   Shipment[]
+
+  @@map("clients")
+}
+
+model ServiceOffering {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  plan        String
+  price       Decimal
+  currency    String   @default("USD")
+  features    Json?
+  orgId       String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  subscriptions Subscription[]
+
+  @@map("service_offerings")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  clientId    String
+  serviceId   String
+  status      SubscriptionStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime?
+  renewalDate DateTime?
+  orgId       String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  organization Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service      ServiceOffering @relation(fields: [serviceId], references: [id])
+
+  @@map("subscriptions")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  clientId    String
+  amount      Decimal
+  currency    String        @default("USD")
+  status      InvoiceStatus @default(DRAFT)
+  dueDate     DateTime
+  paidAt      DateTime?
+  orgId       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+
+  @@map("invoices")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  invoiceId   String?
+  amount      Decimal
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  providerRef String?       // External payment provider reference
+  paidAt      DateTime?
+  orgId       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invoice      Invoice?     @relation(fields: [invoiceId], references: [id])
+
+  @@map("payments")
+}
+
+enum LeadStage {
+  PROSPECT
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+model Lead {
+  id          String    @id @default(cuid())
+  name        String
+  email       String?
+  company     String?
+  stage       LeadStage @default(PROSPECT)
+  value       Decimal?
+  clientId    String?
+  orgId       String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client?      @relation(fields: [clientId], references: [id])
+
+  @@map("leads")
+}
+
+enum CommunicationChannel {
+  EMAIL
+  PHONE
+  SMS
+  CHAT
+  MEETING
+  OTHER
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model CommunicationLog {
+  id          String                   @id @default(cuid())
+  clientId    String
+  userId      String
+  channel     CommunicationChannel
+  direction   CommunicationDirection
+  subject     String?
+  content     String?
+  timestamp   DateTime                 @default(now())
+  orgId       String
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@map("communication_logs")
+}
+
+model Shipment {
+  id          String   @id @default(cuid())
+  clientId    String?
+  routeId     String?
+  vehicleId   String?
+  pickup      Json     // Address/location data
+  dropoff     Json     // Address/location data
+  waypoints   Json?    // Array of intermediate stops
+  eta         DateTime?
+  actualDelivery DateTime?
+  status      String   @default("PENDING")
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client?      @relation(fields: [clientId], references: [id])
+  route        Route?       @relation(fields: [routeId], references: [id])
+  vehicle      Vehicle?     @relation(fields: [vehicleId], references: [id])
+
+  @@map("shipments")
+}
+
+model Route {
+  id          String   @id @default(cuid())
+  name        String
+  waypoints   Json     // Array of route points
+  distance    Decimal? // In kilometers
+  duration    Int?     // In minutes
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  shipments    Shipment[]
+
+  @@map("routes")
+}
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // truck, van, car, etc.
+  capacity    Json?    // weight, volume, etc.
+  availability Json?   // schedule/availability data
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  shipments    Shipment[]
+
+  @@map("vehicles")
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  capacity    Json?
+  availability Json?
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("assets")
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  clientId    String
+  lineItems   Json     // Array of order items
+  totalAmount Decimal
+  currency    String   @default("USD")
+  status      String   @default("PENDING")
+  scheduledAt DateTime?
+  assigneeId  String?  // User assigned to fulfill
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String   // maintenance, delivery, consultation, etc.
+  status      String   @default("SCHEDULED")
+  scheduledAt DateTime
+  estimatedDuration Int? // In minutes
+  assigneeId  String?
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
+
+model IntegrationCredential {
+  id          String   @id @default(cuid())
+  provider    String   // stripe, google, mailchimp, etc.
+  scopes      String[] // Array of permissions/scopes
+  encryptedSecret Json // Encrypted credential data
+  isActive    Boolean  @default(true)
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("integration_credentials")
+}
+
+// ============================================================================
+// QUANTUM MODULE (OPTIONAL)
+// ============================================================================
+
+enum QuantumJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model QuantumJob {
+  id          String           @id @default(cuid())
+  userId      String
+  problemSpec Json             // Problem definition
+  algorithm   String           // QAOA, VQE, etc.
+  backend     String           // Cirq, Qiskit, etc.
+  params      Json?            // Algorithm parameters
+  status      QuantumJobStatus @default(QUEUED)
+  submittedAt DateTime         @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  orgId       String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  organization Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id])
+  results      QuantumResult[]
+
+  @@map("quantum_jobs")
+}
+
+model QuantumResult {
+  id          String   @id @default(cuid())
+  jobId       String
+  metrics     Json     // Performance metrics
+  bestSolution Json?   // Optimal solution found
+  rawData     Json?    // Raw quantum computation results
+  createdAt   DateTime @default(now())
+
+  // Relations
+  job         QuantumJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("quantum_results")
+}

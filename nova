@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ---------------------------
+# NOVA: Repo Automation Shell
+# ---------------------------
+# Commands:
+#   nova init            -> install deps, copy env, generate prisma, seed
+#   nova up              -> docker compose up (db etc.)
+#   nova migrate         -> prisma migrate dev
+#   nova seed            -> prisma seed
+#   nova dev             -> turbo dev (web + api)
+#   nova test            -> run tests
+#   nova build           -> build all
+#   nova report          -> build sample audit report
+#   nova ledger-append   -> append sample ledger event (needs JWT)
+#   nova ledger-verify   -> verify ledger chain
+#   nova openapi         -> open Swagger in browser
+#   nova openapi:gen     -> generate OpenAPI spec from Zod schemas
+#   nova vscode          -> apply VS Code workspace config
+#   nova gcp:print-env   -> show required GCP envs
+#   nova doctor          -> environment diagnostics
+#   nova help            -> show help
+
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+CONFIG_YAML="${ROOT_DIR}/nova.yaml"
+CONFIG_JSON="${ROOT_DIR}/nova.json"
+API_DIR="${ROOT_DIR}/apps/api"
+WEB_DIR="${ROOT_DIR}/apps/web"
+
+# tiny yaml reader (yq if present else awk fallback)
+read_cfg(){
+  local key=$1
+  if command -v yq >/dev/null 2>&1; then
+    yq -r ".${key}" "$CONFIG_YAML"
+  else
+    # fallback expects simple top-level scalar keys key: value
+    awk -F": *" -v k="$key" '$1==k {print $2}' "$CONFIG_YAML"
+  fi
+}
+
+PORT_API=$(read_cfg ports.api || echo 4000)
+PORT_WEB=$(read_cfg ports.web || echo 3000)
+DB_URL=$(read_cfg env.DATABASE_URL || true)
+
+need(){ command -v "$1" >/dev/null 2>&1 || { echo "✖ missing: $1"; exit 2; }; }
+
+banner(){ echo -e "\n\033[1m▶ $*\033[0m"; }
+
+init(){
+  banner "NOVA init"
+  need pnpm; need docker; need docker-compose || true
+  if [ ! -f .env ]; then cp .env.example .env && echo "✓ .env created"; fi
+  pnpm install
+  if [ -z "${DB_URL:-}" ]; then echo "ℹ using local Postgres (docker-compose)"; fi
+  docker compose up -d
+  echo "⏳ Waiting for database to be ready..."
+  sleep 5
+  if [ -d "$API_DIR" ]; then
+    (cd "$API_DIR" && pnpm prisma:generate && pnpm prisma:migrate && pnpm prisma:seed)
+  else
+    echo "ℹ API directory not found, skipping Prisma setup"
+  fi
+  echo "✓ init complete"
+}
+
+up(){ banner "docker compose up"; docker compose up -d; }
+
+migrate(){ banner "prisma migrate"; (cd "$API_DIR" && pnpm prisma:migrate); }
+
+seed(){ banner "prisma seed"; (cd "$API_DIR" && pnpm prisma:seed); }
+
+dev(){ banner "turbo dev"; pnpm -w dev; }
+
+test(){ banner "tests"; pnpm -w test --if-present; }
+
+build(){ banner "build"; pnpm -w build; }
+
+report(){ banner "audit report"; pnpm report:sample && echo "✓ AUDIT_REPORT.md generated"; }
+
+ledger_append(){
+  TOKEN=${TOKEN:-}
+  if [ -z "$TOKEN" ]; then echo "Set TOKEN env with a valid JWT (export TOKEN=...)"; exit 1; fi
+  banner "ledger append"
+  curl -s "http://localhost:${PORT_API}/api/ledger/append" \
+    -H 'authorization: Bearer '"$TOKEN" -H 'content-type: application/json' \
+    -d '{"entity":"Project","entityId":"demo","action":"CREATE","data":{"name":"Demo"}}' | jq .
+}
+
+ledger_verify(){
+  TOKEN=${TOKEN:-}
+  if [ -z "$TOKEN" ]; then echo "Set TOKEN env with a valid JWT (export TOKEN=...)"; exit 1; fi
+  banner "ledger verify"
+  curl -s "http://localhost:${PORT_API}/api/ledger/verify" -H 'authorization: Bearer '"$TOKEN" | jq .
+}
+
+openapi(){
+  local url="http://localhost:${PORT_API}/docs"
+  banner "open swagger: $url"
+  if command -v open >/dev/null 2>&1; then open "$url"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$url"; else echo "$url"; fi
+}
+
+gcp_print_env(){
+  cat <<EOF
+# Required GCP env (example)
+GCP_PROJECT=
+GCP_REGION=
+GKE_CLUSTER=
+CLOUD_SQL_INSTANCE=
+CLOUD_SQL_USER=
+CLOUD_SQL_PASS=
+CLOUD_SQL_DB=adminchat
+EOF
+}
+
+doctor(){
+  echo "— toolchain —"; for t in pnpm docker node psql python3 g++; do printf "%-10s : " "$t"; if command -v $t >/dev/null 2>&1; then $t --version 2>/dev/null | head -n1; else echo "missing"; fi; done
+  echo "— ports —"; echo "web:${PORT_WEB} api:${PORT_API}"
+  echo "— env —"; [ -f .env ] && echo "✓ .env present" || echo "✖ .env missing"
+}
+
+vscode(){
+  banner "VS Code workspace config"
+  if [ -f ".vscode/settings.json" ]; then
+    echo "✓ VS Code settings already configured"
+  else
+    echo "ℹ Install recommended extensions for optimal experience"
+  fi
+  code . || echo "💡 Open this folder in VS Code to use integrated tasks"
+}
+
+openapi_gen(){
+  banner "generate OpenAPI spec"
+  if [ -f "$API_DIR/scripts/generate-openapi.ts" ]; then
+    (cd "$API_DIR" && pnpm tsx scripts/generate-openapi.ts)
+  else
+    echo "ℹ OpenAPI generation script not yet implemented"
+  fi
+}
+
+case "${1:-help}" in
+  init) init ;;
+  up) up ;;
+  migrate) migrate ;;
+  seed) seed ;;
+  dev) dev ;;
+  test) test ;;
+  build) build ;;
+  report) report ;;
+  ledger-append) ledger_append ;;
+  ledger-verify) ledger_verify ;;
+  openapi) openapi ;;
+  openapi:gen) openapi_gen ;;
+  vscode) vscode ;;
+  gcp:print-env) gcp_print_env ;;
+  doctor) doctor ;;
+  help|*) grep -E "^#   nova" -n "$0" | sed 's/^.*nova/nova/' ;;
+esac

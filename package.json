@@ -1,0 +1,20 @@
+{
+  "name": "gtek-quantum-quill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "report:sample": "echo 'Generating sample audit report...' && echo '# Sample Audit Report\n\nGenerated on: '$(date)'\n\n## Summary\n- Project: Admin Chat & Audit\n- Status: In Development\n- Last Updated: '$(date)'\n' > AUDIT_REPORT.md"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

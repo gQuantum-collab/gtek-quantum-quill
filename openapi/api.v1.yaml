@@ -1,0 +1,911 @@
+# Generated from Zod schemas - DO NOT EDIT MANUALLY
+# Run 'pnpm openapi:gen' to regenerate
+
+{
+  "openapi": "3.0.3",
+  "info": {
+    "version": "1.0.0",
+    "title": "Admin Chat & Audit API",
+    "description": "Business Admin + Auditing + Real-time Chat with Developer Studio",
+    "contact": {
+      "name": "GTEK Quantum",
+      "url": "https://gtekquantum.net"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.gtekquantum.net",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Role": {
+        "type": "string",
+        "enum": [
+          "OWNER",
+          "ADMIN",
+          "AUDITOR",
+          "MANAGER",
+          "CONTRIBUTOR",
+          "READONLY"
+        ],
+        "description": "User roles with hierarchical permissions"
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "TODO",
+          "IN_PROGRESS",
+          "REVIEW",
+          "DONE",
+          "CANCELLED"
+        ],
+        "description": "Task/Project status"
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "orgName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Organization name",
+            "example": "Acme Corp"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address",
+            "example": "admin@acme.com"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "User full name",
+            "example": "John Doe"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 100,
+            "description": "Password (min 8 characters)",
+            "example": "password123"
+          }
+        },
+        "required": [
+          "orgName",
+          "email",
+          "name",
+          "password"
+        ],
+        "description": "User registration request"
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "description": "User login request"
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT authentication token"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "User ID"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "User email"
+              },
+              "name": {
+                "type": "string",
+                "description": "User name"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "OWNER",
+                  "ADMIN",
+                  "AUDITOR",
+                  "MANAGER",
+                  "CONTRIBUTOR",
+                  "READONLY"
+                ],
+                "description": "User roles with hierarchical permissions"
+              },
+              "orgId": {
+                "type": "string",
+                "description": "Organization ID"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Creation timestamp"
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "name",
+              "role",
+              "orgId",
+              "createdAt"
+            ],
+            "description": "User information"
+          }
+        },
+        "required": [
+          "token",
+          "user"
+        ],
+        "description": "Authentication response"
+      },
+      "CreateProject": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Project name",
+            "example": "Q4 Marketing Campaign"
+          },
+          "description": {
+            "type": "string",
+            "description": "Project description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "REVIEW",
+              "DONE",
+              "CANCELLED"
+            ],
+            "default": "TODO",
+            "description": "Task/Project status"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Project due date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Project tags"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "description": "Create project request"
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Project ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Project description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "REVIEW",
+              "DONE",
+              "CANCELLED"
+            ],
+            "description": "Task/Project status"
+          },
+          "orgId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "Project owner ID"
+          },
+          "dueAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Due date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Project tags"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "orgId",
+          "ownerId",
+          "dueAt",
+          "tags",
+          "createdAt",
+          "updatedAt"
+        ],
+        "description": "Project entity"
+      },
+      "CreateTask": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "description": "Parent project ID",
+            "example": "proj_123"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Task title",
+            "example": "Review Q3 metrics"
+          },
+          "description": {
+            "type": "string",
+            "description": "Task description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "REVIEW",
+              "DONE",
+              "CANCELLED"
+            ],
+            "default": "TODO",
+            "description": "Task/Project status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ],
+            "default": "MEDIUM",
+            "description": "Task priority level"
+          },
+          "assigneeId": {
+            "type": "string",
+            "description": "Assigned user ID"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Task due date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Task tags"
+          }
+        },
+        "required": [
+          "projectId",
+          "title"
+        ],
+        "description": "Create task request"
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Task ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Task description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "REVIEW",
+              "DONE",
+              "CANCELLED"
+            ],
+            "description": "Task/Project status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ],
+            "description": "Task priority"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Parent project ID"
+          },
+          "orgId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "assigneeId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Assigned user ID"
+          },
+          "creatorId": {
+            "type": "string",
+            "description": "Task creator ID"
+          },
+          "dueAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Due date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Task tags"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "status",
+          "priority",
+          "projectId",
+          "orgId",
+          "assigneeId",
+          "creatorId",
+          "dueAt",
+          "tags",
+          "createdAt",
+          "updatedAt"
+        ],
+        "description": "Task entity"
+      },
+      "LedgerEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Event ID"
+          },
+          "entity": {
+            "type": "string",
+            "description": "Entity type (Project, Task, etc.)"
+          },
+          "entityId": {
+            "type": "string",
+            "description": "Entity ID"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE"
+            ],
+            "description": "Action performed"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "description": "Event data"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User who performed action"
+          },
+          "orgId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Event hash"
+          },
+          "prevHash": {
+            "type": "string",
+            "description": "Previous event hash"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Event timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "entity",
+          "entityId",
+          "action",
+          "data",
+          "userId",
+          "orgId",
+          "hash",
+          "prevHash",
+          "timestamp"
+        ],
+        "description": "Ledger event"
+      },
+      "AppendLedger": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Entity type",
+            "example": "Project"
+          },
+          "entityId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Entity ID",
+            "example": "proj_123"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE"
+            ],
+            "description": "Action type"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "description": "Action data",
+            "example": {
+              "name": "New Project"
+            }
+          }
+        },
+        "required": [
+          "entity",
+          "entityId",
+          "action",
+          "data"
+        ],
+        "description": "Append ledger event request"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "description": "Error details"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "description": "Error response"
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ],
+            "description": "Health status"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Check timestamp"
+          },
+          "version": {
+            "type": "string",
+            "description": "API version"
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "version"
+        ],
+        "description": "Health check response"
+      }
+    },
+    "parameters": {},
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Health check endpoint",
+        "summary": "Check API health status",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Register new user and organization",
+        "summary": "User registration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "201": {
+            "description": "User and organization created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Authenticate user and get JWT token",
+        "summary": "User login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects": {
+      "post": {
+        "description": "Create a new project",
+        "summary": "Create project",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProject"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Projects"
+        ],
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "description": "List all projects in organization",
+        "summary": "List projects",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Projects"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "post": {
+        "description": "Create a new task",
+        "summary": "Create task",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTask"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tasks"
+        ],
+        "responses": {
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ledger/append": {
+      "post": {
+        "description": "Append event to audit ledger",
+        "summary": "Append ledger event",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppendLedger"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Ledger"
+        ],
+        "responses": {
+          "201": {
+            "description": "Event appended to ledger",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEvent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ledger/verify": {
+      "get": {
+        "description": "Verify ledger integrity",
+        "summary": "Verify ledger chain",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Ledger"
+        ],
+        "responses": {
+          "200": {
+            "description": "Ledger verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "Verification status"
+                    },
+                    "eventsCount": {
+                      "type": "number",
+                      "description": "Total events verified"
+                    },
+                    "headHash": {
+                      "type": "string",
+                      "description": "Latest event hash"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Verification timestamp"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
