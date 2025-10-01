@@ -1,0 +1,42 @@
+{
+  "model": "palette-generator-v1",
+  "version": "1.0.0",
+  "description": "Color palette generation manifest",
+  "parameters": {
+    "temperature": 0.8,
+    "maxColors": 5,
+    "colorSpace": "hex",
+    "harmonies": ["complementary", "analogous", "triadic", "monochromatic"],
+    "constraints": {
+      "minContrast": 4.5,
+      "wcagAA": true
+    }
+  },
+  "presets": {
+    "professional": {
+      "baseHues": [210, 220, 200],
+      "saturationRange": [30, 60],
+      "lightnessRange": [30, 70]
+    },
+    "playful": {
+      "baseHues": [330, 60, 180, 280],
+      "saturationRange": [60, 90],
+      "lightnessRange": [40, 80]
+    },
+    "elegant": {
+      "baseHues": [0, 280, 40],
+      "saturationRange": [10, 40],
+      "lightnessRange": [20, 60]
+    },
+    "bold": {
+      "baseHues": [0, 220, 45],
+      "saturationRange": [70, 100],
+      "lightnessRange": [30, 70]
+    },
+    "calm": {
+      "baseHues": [180, 200, 160],
+      "saturationRange": [20, 50],
+      "lightnessRange": [50, 80]
+    }
+  }
+}

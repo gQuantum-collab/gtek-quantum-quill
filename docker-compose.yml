@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: quill-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - quill-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: quill-api
+    ports:
+      - "8787:8787"
+    environment:
+      - NODE_ENV=development
+      - API_PORT=8787
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./config:/app/config
+      - ./output:/app/output
+      - ./audit-logs:/app/audit-logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - quill-network
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: quill-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - WEB_PORT=3000
+      - NEXT_PUBLIC_API_URL=http://localhost:8787
+    depends_on:
+      - api
+    networks:
+      - quill-network
+    restart: unless-stopped
+
+  render-worker:
+    build:
+      context: .
+      dockerfile: workers/render/Dockerfile
+    container_name: quill-render-worker
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./output:/app/output
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - quill-network
+    restart: unless-stopped
+
+networks:
+  quill-network:
+    driver: bridge
+
+volumes:
+  redis-data:

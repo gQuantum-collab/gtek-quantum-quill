@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "rateLimits": {
+    "global": {
+      "windowMs": 60000,
+      "maxRequests": 100
+    },
+    "endpoints": {
+      "/v1/palette/generate": {
+        "windowMs": 60000,
+        "maxRequests": 30
+      },
+      "/v1/layout/solve": {
+        "windowMs": 60000,
+        "maxRequests": 30
+      },
+      "/v1/export/render": {
+        "windowMs": 60000,
+        "maxRequests": 10
+      },
+      "/v1/publish/youtube": {
+        "windowMs": 60000,
+        "maxRequests": 5
+      },
+      "/v1/ads/export": {
+        "windowMs": 60000,
+        "maxRequests": 20
+      },
+      "/hooks/justcall": {
+        "windowMs": 60000,
+        "maxRequests": 100
+      }
+    },
+    "ipWhitelist": [],
+    "strictMode": false
+  }
+}

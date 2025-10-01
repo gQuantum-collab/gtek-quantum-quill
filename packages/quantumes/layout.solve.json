@@ -1,0 +1,63 @@
+{
+  "model": "layout-solver-v1",
+  "version": "1.0.0",
+  "description": "Layout optimization manifest",
+  "parameters": {
+    "algorithm": "constraint-satisfaction",
+    "gridSize": 12,
+    "gutterSize": 16,
+    "margins": {
+      "top": 32,
+      "right": 32,
+      "bottom": 32,
+      "left": 32
+    }
+  },
+  "rules": {
+    "hierarchy": {
+      "logo": {
+        "priority": 10,
+        "preferredPosition": "top-left",
+        "minSize": { "width": 80, "height": 80 }
+      },
+      "headline": {
+        "priority": 9,
+        "preferredPosition": "center",
+        "minSize": { "width": 200, "height": 60 }
+      },
+      "image": {
+        "priority": 8,
+        "preferredPosition": "center",
+        "minSize": { "width": 300, "height": 200 }
+      },
+      "text": {
+        "priority": 7,
+        "preferredPosition": "bottom",
+        "minSize": { "width": 150, "height": 40 }
+      }
+    },
+    "spacing": {
+      "minDistance": 16,
+      "alignment": "grid-snap"
+    },
+    "constraints": {
+      "maxOverlap": 0,
+      "respectMargins": true,
+      "maintainAspectRatio": true
+    }
+  },
+  "templates": {
+    "hero": {
+      "canvasSize": { "width": 1920, "height": 1080 },
+      "layout": "centered"
+    },
+    "square": {
+      "canvasSize": { "width": 1080, "height": 1080 },
+      "layout": "grid"
+    },
+    "story": {
+      "canvasSize": { "width": 1080, "height": 1920 },
+      "layout": "vertical-stack"
+    }
+  }
+}

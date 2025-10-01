@@ -1,0 +1,7 @@
+{
+  "name": "@quill/quantumes",
+  "version": "1.0.0",
+  "main": "./palette.generate.json",
+  "description": "JSON manifests for AI model configurations",
+  "license": "Apache-2.0"
+}

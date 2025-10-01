@@ -1,0 +1,27 @@
+{
+  "name": "quill-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-assisted branding and ad engine",
+  "author": "gQuantum-collab",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "prettier": "^3.2.4",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  }
+}
