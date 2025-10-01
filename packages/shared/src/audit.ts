@@ -17,11 +17,9 @@ export interface AuditLogEntry {
 }
 
 export class AuditLogger {
-  private logDir: string;
   private logFile: string;
 
   constructor(logDir = "./audit-logs") {
-    this.logDir = logDir;
     this.logFile = join(logDir, "audit.jsonl");
     
     if (!existsSync(logDir)) {

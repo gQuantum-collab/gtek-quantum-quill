@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 import { createHmac } from "crypto";
 import { createAuditLogger } from "@quill/shared";
 
-const router = Router();
+const router: IRouter = Router();
 const auditLogger = createAuditLogger();
 
 function verifyHmac(payload: string, signature: string, secret: string): boolean {

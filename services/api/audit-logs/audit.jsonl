@@ -1,0 +1,1 @@
+{"event":"justcall.webhook.received","actor":"system","timestamp":"2025-10-01T03:53:24.133Z","payload":{"callId":"12345","from":"+1234567890","to":"+0987654321","status":"completed","timestamp":"2025-10-01T03:53:24.133Z"},"sha256":"269bb919ff3877ea5f2a98ac15bd89fc9aa5198bf0084be50bce217fa77d7e22","signatureKid":"key-v1"}

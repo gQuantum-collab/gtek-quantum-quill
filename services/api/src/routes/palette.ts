@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 import { PaletteGenerateRequestSchema } from "@quill/shared";
 import paletteManifest from "@quill/quantumes/palette.generate.json";
 
-const router = Router();
+const router: IRouter = Router();
 
 function hslToHex(h: number, s: number, l: number): string {
   l /= 100;

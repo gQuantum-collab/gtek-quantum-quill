@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 import { LayoutSolveRequestSchema } from "@quill/shared";
 import layoutManifest from "@quill/quantumes/layout.solve.json";
 
-const router = Router();
+const router: IRouter = Router();
 
 function solveLayout(elements: Array<{ type: string; content: string; priority: number }>, canvasWidth: number, canvasHeight: number) {
   const layout = [];

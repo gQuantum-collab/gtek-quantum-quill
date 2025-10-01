@@ -1,5 +1,5 @@
 import ffmpeg from "fluent-ffmpeg";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { createLogger } from "@quill/shared";
 
@@ -18,6 +18,7 @@ export interface RenderResult {
   success: boolean;
   outputPath?: string;
   error?: string;
+  [key: string]: unknown;
 }
 
 /**

@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 import { YouTubePublishRequestSchema } from "@quill/shared";
 import { randomUUID } from "crypto";
 
-const router = Router();
+const router: IRouter = Router();
 
 router.post("/v1/publish/youtube", (req: Request, res: Response) => {
   const validation = YouTubePublishRequestSchema.safeParse(req.body);

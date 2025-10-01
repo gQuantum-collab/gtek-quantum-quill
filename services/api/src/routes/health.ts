@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 
-const router = Router();
+const router: IRouter = Router();
 
 router.get("/health", (_req: Request, res: Response) => {
   res.json({

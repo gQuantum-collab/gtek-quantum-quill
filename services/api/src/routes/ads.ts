@@ -1,9 +1,10 @@
 import { Router, Request, Response } from "express";
+import type { IRouter } from "express";
 import { GoogleAdsExportRequestSchema } from "@quill/shared";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 
-const router = Router();
+const router: IRouter = Router();
 
 router.post("/v1/ads/export", (req: Request, res: Response) => {
   const validation = GoogleAdsExportRequestSchema.safeParse(req.body);
