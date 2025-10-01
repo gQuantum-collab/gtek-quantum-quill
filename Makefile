@@ -1,4 +1,4 @@
-.PHONY: help install dev build clean docker-build docker-up docker-down test lint
+.PHONY: help install dev build clean docker-build docker-up docker-down docker-logs test-api test lint
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -31,6 +31,9 @@ docker-down: ## Stop Docker services
 
 docker-logs: ## View Docker logs
 	docker compose logs -f
+
+test-api: ## Test API endpoints
+	./test-api.sh
 
 test: ## Run tests
 	pnpm run test

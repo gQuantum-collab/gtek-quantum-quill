@@ -64,8 +64,10 @@ pnpm run dev
 
 ### Docker Deployment
 
+For production Docker images:
+
 ```bash
-# Build and start all services
+# Build and start all services (requires Docker build)
 docker compose up
 
 # Or using Make
@@ -73,9 +75,20 @@ make docker-build
 make docker-up
 ```
 
+For development with Docker (faster, uses volumes):
+
+```bash
+# Start services with hot reload
+docker compose -f docker-compose.dev.yml up
+
+# This will build packages on startup and use volume mounts
+```
+
 The services will be available at:
 - Web UI: http://localhost:3000
 - API: http://localhost:3001
+
+**Note:** The production Dockerfiles build optimized images. Due to certificate chain issues in some environments, the Dockerfiles temporarily disable SSL checking during pnpm installation (this is reverted immediately after installation for security).
 
 ### Testing the API
 
