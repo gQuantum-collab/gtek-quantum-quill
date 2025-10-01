@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "policies": {
+    "content": {
+      "maxFileSizeMB": 500,
+      "allowedVideoFormats": ["mp4", "mov", "avi"],
+      "allowedImageFormats": ["png", "jpg", "jpeg", "svg"],
+      "maxVideoDurationSeconds": 300,
+      "maxConcurrentRenders": 5
+    },
+    "audit": {
+      "retentionDays": 365,
+      "encryptAtRest": true,
+      "appendOnly": true,
+      "requiredFields": ["event", "actor", "timestamp", "sha256", "signatureKid"]
+    },
+    "api": {
+      "maxRequestsPerMinute": 60,
+      "maxPayloadSizeKB": 10240,
+      "timeoutSeconds": 30,
+      "retryPolicy": {
+        "maxRetries": 3,
+        "backoffMs": 1000
+      }
+    },
+    "youtube": {
+      "maxDailyUploads": 50,
+      "defaultPrivacy": "private",
+      "requireMetadata": true
+    },
+    "googleAds": {
+      "maxAssetsPerExport": 100,
+      "validateAssets": true,
+      "requireCompliance": true
+    }
+  }
+}

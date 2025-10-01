@@ -1,0 +1,66 @@
+name: Deploy to Cloud Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+  GCP_REGION: us-central1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Build and Push API
+        run: |
+          docker build -t gcr.io/$GCP_PROJECT/quill-api:${{ github.sha }} -f services/api/Dockerfile .
+          docker push gcr.io/$GCP_PROJECT/quill-api:${{ github.sha }}
+
+      - name: Deploy API to Cloud Run
+        run: |
+          gcloud run deploy quill-api \
+            --image gcr.io/$GCP_PROJECT/quill-api:${{ github.sha }} \
+            --platform managed \
+            --region $GCP_REGION \
+            --allow-unauthenticated \
+            --port 8787 \
+            --memory 512Mi \
+            --cpu 1
+
+      - name: Build and Push Web
+        run: |
+          docker build -t gcr.io/$GCP_PROJECT/quill-web:${{ github.sha }} -f apps/web/Dockerfile .
+          docker push gcr.io/$GCP_PROJECT/quill-web:${{ github.sha }}
+
+      - name: Deploy Web to Cloud Run
+        run: |
+          gcloud run deploy quill-web \
+            --image gcr.io/$GCP_PROJECT/quill-web:${{ github.sha }} \
+            --platform managed \
+            --region $GCP_REGION \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 512Mi \
+            --cpu 1
+
+      - name: Output URLs
+        run: |
+          echo "API URL: $(gcloud run services describe quill-api --platform managed --region $GCP_REGION --format 'value(status.url)')"
+          echo "Web URL: $(gcloud run services describe quill-web --platform managed --region $GCP_REGION --format 'value(status.url)')"

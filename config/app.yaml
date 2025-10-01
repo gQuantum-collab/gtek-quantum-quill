@@ -1,0 +1,70 @@
+app:
+  name: QUILL Studio
+  version: 1.0.0
+  environment: development
+
+server:
+  api:
+    host: 0.0.0.0
+    port: 8787
+    corsOrigins:
+      - http://localhost:3000
+      - https://quill-studio.app
+  web:
+    host: 0.0.0.0
+    port: 3000
+
+redis:
+  host: redis
+  port: 6379
+  db: 0
+
+storage:
+  videoOutputPath: ./output/videos
+  assetsPath: ./output/assets
+  auditLogPath: ./audit-logs
+
+integrations:
+  youtube:
+    enabled: true
+    apiVersion: v3
+    scopes:
+      - https://www.googleapis.com/auth/youtube.upload
+      - https://www.googleapis.com/auth/youtube.readonly
+  
+  googleAds:
+    enabled: true
+    apiVersion: v14
+    
+  justCall:
+    enabled: true
+    webhookPath: /hooks/justcall
+    hmacHeader: X-JustCall-Signature
+    
+  copper:
+    enabled: true
+    apiVersion: v1
+    baseUrl: https://api.copper.com
+
+rendering:
+  ffmpeg:
+    threads: 4
+    preset: medium
+    crf: 23
+  videoDefaults:
+    resolution: "1920x1080"
+    framerate: 30
+    format: mp4
+    codec: libx264
+
+security:
+  auditLog:
+    enabled: true
+    signatureAlgorithm: RS256
+    keyId: key-v1
+  rateLimiting:
+    enabled: true
+    configPath: ./config/rate_limits.json
+  hmacVerification:
+    enabled: true
+    algorithm: sha256
