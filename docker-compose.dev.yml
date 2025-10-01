@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  api:
+    image: node:18-alpine
+    working_dir: /app
+    command: sh -c "npm install -g pnpm@9.0.0 && pnpm install && cd packages/shared && pnpm run build && cd ../../services/api && pnpm run build && pnpm run start"
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JUSTCALL_SECRET=test-secret
+    volumes:
+      - ./:/app
+    networks:
+      - quill-network
+
+  web:
+    image: node:18-alpine
+    working_dir: /app
+    command: sh -c "npm install -g pnpm@9.0.0 && pnpm install && cd packages/shared && pnpm run build && cd ../../apps/web && pnpm run build && pnpm run start"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:3001
+    depends_on:
+      - api
+    volumes:
+      - ./:/app
+    networks:
+      - quill-network
+
+networks:
+  quill-network:
+    driver: bridge
